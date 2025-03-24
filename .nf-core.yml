@@ -1,0 +1,18 @@
+repository_type: pipeline
+
+nf_core_version: 3.2.0
+
+lint: {}
+
+template:
+  org: nf-core
+  name: rarevariantburden
+  description: This pipeline include tools for performing consistent summary count
+    based rare variant burden test, which is useful when we only have sequenced cases
+    data, no control data; here we can compare the cases against public summary count
+    data, such as gnomAD data
+  author: Saima Sultana Tithi
+  version: 1.0.0dev
+  force: true
+  outdir: .
+  is_nfcore: true
