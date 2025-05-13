@@ -3,12 +3,29 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_rarevariantburden_pipeline'
+
+include {
+  splitJointVCF;
+  coverageIntersect;
+  normalizeQCAfterSplit;
+  normalizeQC;
+  annotate;
+  skipAnnotation;
+  caseGenotypeGDS;
+  caseAnnotationGDS;
+  skipGenotypeGDS;
+  skipAnnotationGDS;
+  extractGnomADPositions;
+  mergeExtractedPositions;
+  RFPrediction;
+  CoCoRV;
+  mergeCoCoRVResults;
+  QQPlotAndFDR;
+  postCheck} from '../modules/local/modules.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -19,74 +36,99 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_rare
 workflow RAREVARIANTBURDEN {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    caseJointVCF // caseJointVCF read in from --caseJointVCF
+    caseSample // caseSample read in from --caseSample
+    
     main:
 
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    // coverage  
+    if (params.caseBed == "NA") {
+        intersectChannel = Channel.value(params.controlBed)
+    } else {
+        coverageIntersect(params.caseBed, params.controlBed)
+        intersectChannel = coverageIntersect.out
+    }
 
-    //
-    // Collate and save software versions
-    //
-    softwareVersionsToYAML(ch_versions)
-        .collectFile(
-            storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_'  +  'rarevariantburden_software_'  + 'mqc_'  + 'versions.yml',
-            sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
+    // create chromosome channel
+    chromosomes = params.chrSet.split("\\s+")
+    chromChannel = Channel.fromList(Arrays.asList(chromosomes))
 
+    // split joint VCF by chromosome
+    // normalize and QC  
+    if (params.caseVCFPrefix == "NA") {
+        caseJointVCFtbi = params.caseJointVCF + ".tbi"
+        splitJointVCF(params.caseJointVCF, caseJointVCFtbi, chromChannel)
+        normalizeQCAfterSplit(splitJointVCF.out)
+        normalizeQCChannel = normalizeQCAfterSplit.out
+    } else {
+        normalizeQC(params.caseVCFPrefix, chromChannel, params.caseVCFSuffix)
+        normalizeQCChannel = normalizeQC.out
+    }
 
-    //
-    // MODULE: MultiQC
-    //
-    ch_multiqc_config        = Channel.fromPath(
-        "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
-    ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
+    // annotate
+    if (params.caseAnnotatedVCFPrefix == "NA") {
+        annotate(normalizeQCChannel, params.build)
+        annotateChannel = annotate.out
+    } else {
+        skipAnnotation(normalizeQCChannel)
+        annotateChannel = skipAnnotation.out
+    }
 
-    summary_params      = paramsSummaryMap(
-        workflow, parameters_schema: "nextflow_schema.json")
-    ch_workflow_summary = Channel.value(paramsSummaryMultiqc(summary_params))
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
-        file(params.multiqc_methods_description, checkIfExists: true) :
-        file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
-        methodsDescriptionText(ch_multiqc_custom_methods_description))
+    if (params.caseGenotypeGDSPrefix == "NA" && params.caseAnnotationGDSPrefix == "NA") {   
+        // case genoypte vcf to gds
+        caseGenotypeGDS(normalizeQCChannel)
+        caseGenotypeGDSChannel = caseGenotypeGDS.out
 
-    ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
-    ch_multiqc_files = ch_multiqc_files.mix(
-        ch_methods_description.collectFile(
-            name: 'methods_description_mqc.yaml',
-            sort: true
-        )
-    )
+        // case annotation to gds
+        caseAnnotationGDS(annotateChannel)
+        caseAnnotationGDSChannel = caseAnnotationGDS.out
+    }
+    else {
+        //skip annotation and GDS conversion
+        skipGenotypeGDS(normalizeQCChannel)
+        caseGenotypeGDSChannel = skipGenotypeGDS.out
 
-    MULTIQC (
-        ch_multiqc_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_custom_config.toList(),
-        ch_multiqc_logo.toList(),
-        [],
-        []
-    )
+        skipAnnotationGDS(skipGenotypeGDS.out)
+        caseAnnotationGDSChannel = skipAnnotationGDS.out
+    }
 
-    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
+    // run gnomAD based population prediction
+    if (params.casePopulation == "NA") {
+        // extract gnomAD positions
+        extractGnomADPositions(normalizeQCChannel)
+
+        // merge extracted gnomAD positions
+        mergeExtractedPositions(extractGnomADPositions.out.collect())
+
+        RFPrediction(mergeExtractedPositions.out)
+        populationChannel = RFPrediction.out[1]
+    } else {
+        populationChannel = Channel.value(params.casePopulation)
+    }
+
+    // run CoCoRV
+    // RFPrediction.out.view()
+    CoCoRV(caseGenotypeGDSChannel.join(caseAnnotationGDSChannel), 
+        intersectChannel,
+        populationChannel)
+
+    // merge CoCoRV results
+    mergeCoCoRVResults(CoCoRV.out.association_perChr.collect(), CoCoRV.out.caseVariants_perChr.collect(), 
+        CoCoRV.out.controlVariants_perChr.collect())
+
+    // QQ plot and FDR
+    QQPlotAndFDR(mergeCoCoRVResults.out.association_res, mergeCoCoRVResults.out.caseVariants_res, mergeCoCoRVResults.out.controlVariants_res)
+
+    //postCheck(mergeCoCoRVResults.out[0], params.topK, params.caseControl)
+    postCheck(mergeCoCoRVResults.out.association_res, params.topK, params.caseControl, params.build, params.caseSample, 
+        normalizeQCChannel.normalizedQCedVCFFile.collect(),
+        normalizeQCChannel.normalizedQCedVCFFileIndex.collect(),
+        annotateChannel.annotatedFile.collect(),
+        annotateChannel.annotatedFileIndex.collect(),
+        CoCoRV.out.caseVariants_perChr.collect(), CoCoRV.out.controlVariants_perChr.collect())
+
+    emit:association_res = mergeCoCoRVResults.out.association_res // channel: /path/to/association.tsv
+    qqplot       = QQPlotAndFDR.out.qqplot               // channel: /path/to/association.tsv.dominant.nRep1000.pdf
 
 }
 

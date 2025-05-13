@@ -18,7 +18,7 @@
 include { RAREVARIANTBURDEN  } from './workflows/rarevariantburden'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_rarevariantburden_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_rarevariantburden_pipeline'
-include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_rarevariantburden_pipeline'
+//include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_rarevariantburden_pipeline'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,7 +29,7 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_rare
 // TODO nf-core: Remove this line if you don't need a FASTA file
 //   This is an example of how to use getGenomeAttribute() to fetch parameters
 //   from igenomes.config using `--genome`
-params.fasta = getGenomeAttribute('fasta')
+//params.fasta = getGenomeAttribute('fasta')
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43,7 +43,8 @@ params.fasta = getGenomeAttribute('fasta')
 workflow NFCORE_RAREVARIANTBURDEN {
 
     take:
-    samplesheet // channel: samplesheet read in from --input
+    caseJointVCF // caseJointVCF read in from --caseJointVCF
+    caseSample // caseSample read in from --caseSample
 
     main:
 
@@ -51,10 +52,11 @@ workflow NFCORE_RAREVARIANTBURDEN {
     // WORKFLOW: Run pipeline
     //
     RAREVARIANTBURDEN (
-        samplesheet
+        caseJointVCF, caseSample
     )
     emit:
-    multiqc_report = RAREVARIANTBURDEN.out.multiqc_report // channel: /path/to/multiqc_report.html
+    association_res = RAREVARIANTBURDEN.out.association_res // channel: /path/to/association.tsv
+    qqplot = RAREVARIANTBURDEN.out.qqplot // channel: /path/to/association.tsv.dominant.nRep1000.pdf
 }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,14 +76,15 @@ workflow {
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.caseJointVCF,
+        params.caseSample
     )
 
     //
     // WORKFLOW: Run main workflow
     //
     NFCORE_RAREVARIANTBURDEN (
-        PIPELINE_INITIALISATION.out.samplesheet
+        PIPELINE_INITIALISATION.out.caseJointVCF, PIPELINE_INITIALISATION.out.caseSample
     )
     //
     // SUBWORKFLOW: Run completion tasks
@@ -93,7 +96,8 @@ workflow {
         params.outdir,
         params.monochrome_logs,
         params.hook_url,
-        NFCORE_RAREVARIANTBURDEN.out.multiqc_report
+        NFCORE_RAREVARIANTBURDEN.out.association_res,
+        NFCORE_RAREVARIANTBURDEN.out.qqplot
     )
 }
 
