@@ -13,7 +13,7 @@
 1. Install Nextflow (>=23.10.0) using the instructions [here.](https://nextflow.io/docs/latest/getstarted.html#installation)
 2. Install one of the following technologies for full pipeline reproducibility: Docker, Singularity, Podman, Shifter or Charliecloud.
 
-## Run nf-core/raredisease with test data
+## Run nf-core/rarevariantburden with test data
 
 Before running the pipeline with your data, we recommend running it with the test dataset available [here](https://github.com/nf-core/test-datasets/tree/rarevariantburden). You do not need to download the data as the pipeline is configured to fetch that data automatically for you when you use the test profile.
 

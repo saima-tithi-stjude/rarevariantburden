@@ -53,7 +53,7 @@ Some key features of our pipeline:
 
 <picture align="center">
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/rarevariantburden_metromap_dark.png">
-    <img alt="nf-core/raredisease workflow" src="docs/images/rarevariantburden_metromap_light.png">
+    <img alt="nf-core/rarevariantburden workflow" src="docs/images/rarevariantburden_metromap_light.png">
 </picture>
 
 1. Split the case joint called and VQSR applied VCF files chromosomewise (Using [BCFtools](https://samtools.github.io/bcftools/bcftools.html))

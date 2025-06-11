@@ -14,6 +14,8 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - [VCF-VQSR-normalizedQC](#vcf-vqsr-normalizedqc) - Normalization and QC
 - [Annotation](#annotation) - Annotate the normalized and QC'd VCF files with Annovar and VEP
+- [gnomADPosition](#gnomadposition) - Predict ethnicity of the case samples
+- [CoCoRV](#cocorv) - Run the burden test using case and control data and generate QQ plot and FDR results
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
 ### VCF-VQSR-normalizedQC
