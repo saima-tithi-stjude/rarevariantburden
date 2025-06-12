@@ -11,7 +11,6 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_rare
 include {
     splitJointVCF;
     coverageIntersect;
-    normalizeQCAfterSplit;
     normalizeQC;
     annotate;
     skipAnnotation;
@@ -57,7 +56,7 @@ workflow RAREVARIANTBURDEN {
     if (params.caseVCFFileList == "NA") {
         caseJointVCFtbi = params.caseJointVCF + ".tbi"
         splitJointVCF(params.caseJointVCF, caseJointVCFtbi, chromChannel)
-        normalizeQCAfterSplit(splitJointVCF.out, params.refFASTA, params.refFASTA + ".fai", params.refFASTA + ".gzi")
+        normalizeQC(splitJointVCF.out, params.refFASTA, params.refFASTA + ".fai", params.refFASTA + ".gzi")
         normalizeQCChannel = normalizeQCAfterSplit.out
     } else {
         caseVCF_ch = Channel
@@ -173,7 +172,7 @@ workflow RAREVARIANTBURDEN {
         CoCoRV.out.caseVariants_perChr.collect(), CoCoRV.out.controlVariants_perChr.collect())
 
     emit:association_res = mergeCoCoRVResults.out.association_res // channel: /path/to/association.tsv
-    qqplot       = QQPlotAndFDR.out.qqplot               // channel: /path/to/association.tsv.dominant.nRep1000.pdf
+    qqplot               = QQPlotAndFDR.out.qqplot                // channel: /path/to/association.tsv.dominant.nRep1000.pdf
 
 }
 

@@ -21,30 +21,6 @@ process splitJointVCF {
     """
 }
 
-process normalizeQCAfterSplit {
-    tag "${chr}"
-    label 'process_single'
-    publishDir "${params.outdir}/vcf_vqsr_normalizedQC", mode: 'copy'
-    container 'stithi/cocorv-nextflow-python:v7'
-
-    input:
-    tuple val(chr), path(vcfFile)
-    path reference
-    path referenceFai
-    path referenceGzi
-
-    output:
-    val("${chr}"), emit: chr
-    path("${chr}.biallelic.leftnorm.ABCheck.vcf.gz"), emit: normalizedQCedVCFFile
-    path("${chr}.biallelic.leftnorm.ABCheck.vcf.gz.tbi"), emit: normalizedQCedVCFFileIndex
-
-    script:
-    """
-    outputPrefix=${chr}
-    ${params.CoCoRVFolder}/utilities/vcfQCAndNormalize.sh ${vcfFile} \${outputPrefix} ${reference}
-    """
-}
-
 process coverageIntersect {
     tag "${caseBed}"
     label 'process_single'
@@ -229,42 +205,6 @@ process caseAnnotationGDS {
     script:
     """
     Rscript ${params.CoCoRVFolder}/utilities/vcf2gds.R ${annotatedFile} ${chr}.annotated.vcf.gz.gds 1
-    """
-}
-
-process skipGenotypeGDS {
-    tag "${chr}"
-    label 'process_single'
-    container 'stithi/cocorv-nextflow-python:v7'
-
-    input:
-    tuple val(chr), path(genotypeGDSFile)
-
-    output:
-    tuple val("${chr}"),
-    path("${chr}.biallelic.leftnorm.ABCheck.vcf.gz.gds")
-
-    script:
-    """
-    ln -s ${genotypeGDSFile} ${chr}.biallelic.leftnorm.ABCheck.vcf.gz.gds
-    """
-}
-
-process skipAnnotationGDS {
-    tag "${chr}"
-    label 'process_single'
-    container 'stithi/cocorv-nextflow-python:v7'
-
-    input:
-    tuple val(chr), path(annotationGDSFile)
-
-    output:
-    tuple val("${chr}"),
-    path("${chr}.annotated.vcf.gz.gds")
-
-    script:
-    """
-    ln -s ${annotationGDSFile} ${chr}.annotated.vcf.gz.gds
     """
 }
 
@@ -468,10 +408,10 @@ process QQPlotAndFDR {
     script:
     """
     Rscript ${params.CoCoRVFolder}/utilities/QQPlotAndFDR.R "association.tsv" \
-     "association.tsv.dominant.nRep1000" --setID gene \
-    --outColumns gene --n 1000 \
-    --pattern "case.*Mutation.*_DOM\$|control.*Mutation.*_DOM\$" \
-    --FDR
+        "association.tsv.dominant.nRep1000" --setID gene \
+        --outColumns gene --n 1000 \
+        --pattern "case.*Mutation.*_DOM\$|control.*Mutation.*_DOM\$" \
+        --FDR
     """
 }
 
