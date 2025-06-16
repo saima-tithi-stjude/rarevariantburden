@@ -57,7 +57,7 @@ workflow RAREVARIANTBURDEN {
         caseJointVCFtbi = params.caseJointVCF + ".tbi"
         splitJointVCF(params.caseJointVCF, caseJointVCFtbi, chromChannel)
         normalizeQC(splitJointVCF.out, params.refFASTA, params.refFASTA + ".fai", params.refFASTA + ".gzi")
-        normalizeQCChannel = normalizeQCAfterSplit.out
+        normalizeQCChannel = normalizeQC.out
     } else {
         caseVCF_ch = Channel
 			            .fromPath(params.caseVCFFileList)
