@@ -177,7 +177,7 @@
         },
         "vepFolder": {
             "type": "string",
-            "description": "Resource folder for the annotation tool Annovar, you can download this folder from our Amazon AWS s3 bucket: s3://cocorv-resource-files/"
+            "description": "Resource folder for the annotation tool VEP, you can download this folder from our Amazon AWS s3 bucket: s3://cocorv-resource-files/"
         },
         "build": {
             "type": "string",
@@ -323,7 +323,7 @@
         },
         "loadingPath": {
             "type": "string",
-            "default": "null/ancestry/gnomad.pca_loadings.ht",
+            "default": "null/ancestry/gnomad.pca_loadings.ht/",
             "hidden": true,
             "description": "Files needed for gnomAD ancestry prediction classifier"
         },
@@ -332,18 +332,6 @@
             "default": "null/ancestry/gnomad.RF_fit.onnx",
             "hidden": true,
             "description": "Files needed for gnomAD ancestry prediction classifier"
-        },
-        "AM": {
-            "type": "string",
-            "default": "null/other_data/AlphaMissense",
-            "hidden": true,
-            "description": "Files needed for Alpha-missense plugin for VEP"
-        },
-        "REVEL": {
-            "type": "string",
-            "default": "null/other_data/REVEL",
-            "hidden": true,
-            "description": "Files needed for Revel plugin for VEP"
         },
         "refFASTA": {
             "type": "string",
