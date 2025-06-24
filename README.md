@@ -52,8 +52,8 @@ Some key features of our pipeline:
 ## Pipeline summary
 
 <picture align="center">
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/rarevariantburden_metromap_dark.png">
-    <img alt="nf-core/rarevariantburden workflow" src="docs/images/rarevariantburden_metromap_light.png">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/cocorv_subway.png">
+    <img alt="nf-core/rarevariantburden workflow diagram" src="docs/images/cocorv_subway.png">
 </picture>
 
 1. Split the case joint called and VQSR applied VCF files chromosomewise (Using [BCFtools](https://samtools.github.io/bcftools/bcftools.html))
@@ -146,7 +146,7 @@ For more details about the output files and reports, please refer to the
 
 ## Credits
 
-nf-core/rarevariantburden is written by Saima Sultana Tithi(saimasultana.tithi@stjude.org) and Wenan Chen(chen.wenan@mayo.edu).
+nf-core/rarevariantburden is written by Saima Sultana Tithi (saimasultana.tithi@stjude.org) and Wenan Chen (chen.wenan@mayo.edu).
 
 <!-- TODO nf-core:
 We thank the following people for their extensive assistance in the development of this pipeline:
