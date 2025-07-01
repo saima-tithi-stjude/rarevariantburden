@@ -73,7 +73,7 @@ process annotate {
     container 'stithi/cocorv-nextflow-vep:v3'
 
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
-    maxRetries 5
+    maxRetries 2
 
     input:
     val(chr)
@@ -101,7 +101,7 @@ process annotate {
     vepThreads = 6
 
     if (build == "GRCh37") {
-        refbuild="hg19"
+        refbuild = "hg19"
         lofteeFolder = vepFolder + "/other_data/loftee/loftee"
         lofteeDataFolder = vepFolder + "/other_data/loftee/data"
         caddSNV = vepFolder + "/other_data/CADD/hg19/v1.7/whole_genome_SNVs.tsv.gz"
@@ -113,11 +113,11 @@ process annotate {
         VEPCACHE = vepFolder + "/ensembl-vep/cache"
     }
     else if (build == "GRCh38") {
-        refbuild="hg38"
+        refbuild = "hg38"
         lofteeFolder = vepFolder + "/other_data/loftee/loftee"
         lofteeDataFolder = vepFolder + "/other_data/loftee/data"
         caddSNV = vepFolder + "/other_data/CADD/hg38/v1.7/whole_genome_SNVs.tsv.gz"
-        caddIndel = vepFolder + "/other_data/CADD/hg38/v1.7/gnomad.genomes-exomes.r4.0.indel.tsv.gz"
+        caddIndel = vepFolder + "/other_data/CADD/hg38/v1.7/gnomad.genomes.r4.0.indel.tsv.gz"
         spliceAISNV = vepFolder + "/other_data/SpliceAI/spliceai_scores.raw.snv.hg38.vcf.gz"
         spliceAIIndel = vepFolder + "/other_data/SpliceAI/spliceai_scores.raw.indel.hg38.vcf.gz"
         AM = vepFolder + "/other_data/AlphaMissense"
@@ -164,7 +164,7 @@ process caseGenotypeGDS {
     container 'stithi/cocorv-nextflow-r:v5'
 
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
-    maxRetries 5
+    maxRetries 2
 
     publishDir "${params.outdir}/vcf_vqsr_normalizedQC", mode: 'copy'
 
@@ -263,10 +263,10 @@ process RFPrediction {
     script:
     threshold = "0.75"
     if (params.build == "GRCh37") {
-    threshold = "0.9"
+        threshold = "0.9"
     }
     else if (params.build == "GRCh38") {
-    threshold = "0.75"
+        threshold = "0.75"
     }
     """
     bash ${params.CoCoRVFolder}/utilities/gnomADPCAndAncestry_docker.sh ${params.CoCoRVFolder} ${loadingPath} ${rfModelPath} ${VCFForPrediction} ${params.build} "PC.population.output.gz" ${threshold} "casePopulation.txt"
@@ -280,7 +280,7 @@ process CoCoRV {
     container 'stithi/cocorv-nextflow-r:v5'
 
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
-    maxRetries 0
+    maxRetries 1
 
     input:
     tuple val(chr), path(caseGenotypeGDS), path(caseAnnoGDS), path(controlCount), path(controlAnnotated)

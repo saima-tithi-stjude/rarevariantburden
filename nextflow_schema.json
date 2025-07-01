@@ -10,7 +10,9 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["outdir"],
+            "required": [
+                "outdir"
+            ],
             "properties": {
                 "outdir": {
                     "type": "string",
@@ -94,7 +96,14 @@
                     "description": "Method used to save pipeline results to output directory.",
                     "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
                     "fa_icon": "fas fa-copy",
-                    "enum": ["symlink", "rellink", "link", "copy", "copyNoFollow", "move"],
+                    "enum": [
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
                     "hidden": true
                 },
                 "email_on_fail": {
@@ -342,22 +351,22 @@
         "caseVCFFileList": {
             "type": "string",
             "default": "NA",
-            "description": "If you split you joined called VCF file by chromosome, you can supply the VCF file list here"
+            "description": "If you split you joined called VCF file by chromosome, you can supply the VCF file list here, the list needs to be in csv format (comma seperated), the column headers are chr,vcf. Then you need to list the chromosome number and the coresponding vcf file for that chromosome."
         },
         "caseAnnotatedVCFFileList": {
             "type": "string",
             "default": "NA",
-            "description": "Pre-annotated case VCF files, you can use the pre-annotated case VCF files to skip the annotation steps in the pipeline"
+            "description": "Pre-annotated case VCF files, you can use the pre-annotated case VCF files to skip the annotation steps in the pipeline, the list needs to be in csv format (comma seperated), the column headers are chr,vcf. Then you need to list the chromosome number and the coresponding vcf file for that chromosome."
         },
         "caseGenotypeGDSFileList": {
             "type": "string",
             "default": "NA",
-            "description": "GDS converted genotype case VCF files, you can use it to skip the genotype GDS conversion steps in the pipeline"
+            "description": "GDS converted genotype case VCF files, you can use it to skip the genotype GDS conversion steps in the pipeline, the list needs to be in csv format (comma seperated), the column headers are chr,gds. Then you need to list the chromosome number and the coresponding gds file for that chromosome."
         },
         "caseAnnotationGDSFileList": {
             "type": "string",
             "default": "NA",
-            "description": "GDS converted annotated case VCF files, you can use it to skip the annotation GDS conversion steps in the pipeline"
+            "description": "GDS converted annotated case VCF files, you can use it to skip the annotation GDS conversion steps in the pipeline, the list needs to be in csv format (comma seperated), the column headers are chr,gds. Then you need to list the chromosome number and the coresponding vcf file for that chromosome."
         },
         "controlGenotypeGDSFileList": {
             "type": "string",
@@ -372,5 +381,11 @@
             "description": "GDS converted annotated control VCF files"
         }
     },
-    "required": ["caseJointVCF", "caseSample", "controlDataFolder", "annovarFolder", "vepFolder"]
+    "required": [
+        "caseJointVCF",
+        "caseSample",
+        "controlDataFolder",
+        "annovarFolder",
+        "vepFolder"
+    ]
 }
