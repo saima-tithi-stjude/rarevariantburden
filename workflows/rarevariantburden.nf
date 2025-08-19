@@ -12,6 +12,7 @@ include {
     splitJointVCF;
     coverageIntersect;
     normalizeQC;
+    skipNormalization;
     annotate;
     skipAnnotation;
     caseGenotypeGDS;
@@ -59,13 +60,26 @@ workflow RAREVARIANTBURDEN {
         normalizeQC(splitJointVCF.out, params.refFASTA, params.refFASTA + ".fai", params.refFASTA + ".gzi")
         normalizeQCChannel = normalizeQC.out
     } else {
+        // joint VCF file is already splitted by chromosome
         caseVCF_ch = Channel
-			            .fromPath(params.caseVCFFileList)
+                        .fromPath(params.caseVCFFileList)
                         .splitCsv(header: true)
                         .map { row -> tuple(row.chr, file(row.vcf)) } // Create a tuple of chr and case VCF file path
 
-        normalizeQC(caseVCF_ch, params.refFASTA, params.refFASTA + ".fai", params.refFASTA + ".gzi")
-        normalizeQCChannel = normalizeQC.out
+        if (params.caseNormalizedVCFFileList == "NA") {
+            normalizeQC(caseVCF_ch, params.refFASTA, params.refFASTA + ".fai", params.refFASTA + ".gzi")
+            normalizeQCChannel = normalizeQC.out
+        }
+        else {
+            //already have normalized vcf files
+            normalize_ch = Channel
+                                .fromPath(params.caseNormalizedVCFFileList)
+                                .splitCsv(header: true)
+                                .map { row -> tuple(row.chr, file(row.vcf), file(row.index)) } // Create a tuple of chr, normalized VCF file path, index file path
+
+            skipNormalization(normalize_ch)
+            normalizeQCChannel = skipNormalization.out
+        }
     }
 
     // annotate
@@ -73,8 +87,9 @@ workflow RAREVARIANTBURDEN {
         annotate(normalizeQCChannel, params.build, params.annovarFolder, params.vepFolder, params.refFASTA)
         annotateChannel = annotate.out
     } else {
+        //already have annotated vcf files
         annotate_ch = Channel
-			                    .fromPath(params.caseAnnotatedVCFFileList)
+                                .fromPath(params.caseAnnotatedVCFFileList)
                                 .splitCsv(header: true)
                                 .map { row -> tuple(row.chr, file(row.vcf), file(row.index)) } // Create a tuple of chr, annotated VCF file path, index file path
 
@@ -87,20 +102,20 @@ workflow RAREVARIANTBURDEN {
         caseGenotypeGDS(normalizeQCChannel)
         caseGenotypeGDSChannel = caseGenotypeGDS.out
 
-        // case annotation to gds
+        // case annotation vcf to gds
         caseAnnotationGDS(annotateChannel)
         caseAnnotationGDSChannel = caseAnnotationGDS.out
     }
     else {
-        //skip annotation and GDS conversion
+        //already have GDS converted genotype files and annotation files
         caseGenotypeGDSChannel = Channel
-			            .fromPath(params.caseGenotypeGDSFileList)
+                        .fromPath(params.caseGenotypeGDSFileList)
                         .splitCsv(header: true)
                         .map { row -> tuple(row.chr, file(row.gds)) } // Create a tuple of chr and GDS file path
 
 
         caseAnnotationGDSChannel = Channel
-			            .fromPath(params.caseAnnotationGDSFileList)
+                        .fromPath(params.caseAnnotationGDSFileList)
                         .splitCsv(header: true)
                         .map { row -> tuple(row.chr, file(row.gds)) } // Create a tuple of chr and GDS file path
 
@@ -117,6 +132,7 @@ workflow RAREVARIANTBURDEN {
         RFPrediction(mergeExtractedPositions.out, params.loadingPath, params.rfModelPath)
         populationChannel = RFPrediction.out[1]
     } else {
+        //already have ethnicity prediction for all samples
         populationChannel = Channel.value(params.casePopulation)
     }
 
@@ -124,12 +140,12 @@ workflow RAREVARIANTBURDEN {
     // RFPrediction.out.view()
 
     controlGenotypeGDSChannel = Channel
-			            .fromPath(params.controlGenotypeGDSFileList)
+                        .fromPath(params.controlGenotypeGDSFileList)
                         .splitCsv(header: true)
                         .map { row -> tuple(row.chr, file(row.gds)) } // Create a tuple of chr and GDS file path
 
     controlAnnotationGDSChannel = Channel
-			            .fromPath(params.controlAnnotationGDSFileList)
+                        .fromPath(params.controlAnnotationGDSFileList)
                         .splitCsv(header: true)
                         .map { row -> tuple(row.chr, file(row.gds)) } // Create a tuple of chr and GDS file path
 
@@ -161,8 +177,6 @@ workflow RAREVARIANTBURDEN {
 
     // QQ plot and FDR
     QQPlotAndFDR(mergeCoCoRVResults.out.association_res, mergeCoCoRVResults.out.caseVariants_res, mergeCoCoRVResults.out.controlVariants_res)
-
-    //postCheck(mergeCoCoRVResults.out[0], params.topK, params.caseControl)
 
     postCheck(mergeCoCoRVResults.out.association_res, params.topK, params.caseControl, params.build, params.caseSample,
         normalizeQCChannel.normalizedQCedVCFFile.collect(),

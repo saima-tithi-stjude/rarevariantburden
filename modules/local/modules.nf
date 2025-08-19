@@ -65,6 +65,24 @@ process normalizeQC {
     """
 }
 
+process skipNormalization {
+    tag "${chr}"
+    label 'process_single'
+    publishDir "${params.outdir}/vcf_vqsr_normalizedQC", mode: 'copy'
+    container 'stithi/cocorv-nextflow-python:v7'
+
+    input:
+    tuple val(chr), path(normalized), path(normalizedTbi)
+
+    output:
+    val("${chr}"), emit: chr
+    path("${chr}.biallelic.leftnorm.ABCheck.vcf.gz"), emit: normalizedQCedVCFFile
+    path("${chr}.biallelic.leftnorm.ABCheck.vcf.gz.tbi"), emit: normalizedQCedVCFFileIndex
+
+    script:
+    """
+    """
+}
 
 process annotate {
     tag "${chr}"
@@ -115,7 +133,7 @@ process annotate {
     else if (build == "GRCh38") {
         refbuild = "hg38"
         lofteeFolder = vepFolder + "/other_data/loftee/loftee"
-        lofteeDataFolder = vepFolder + "/other_data/loftee/data"
+        lofteeDataFolder = vepFolder + "/other_data/loftee/data_hg38"
         caddSNV = vepFolder + "/other_data/CADD/hg38/v1.7/whole_genome_SNVs.tsv.gz"
         caddIndel = vepFolder + "/other_data/CADD/hg38/v1.7/gnomad.genomes.r4.0.indel.tsv.gz"
         spliceAISNV = vepFolder + "/other_data/SpliceAI/spliceai_scores.raw.snv.hg38.vcf.gz"
