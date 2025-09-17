@@ -147,7 +147,7 @@ workflow RAREVARIANTBURDEN {
                             extractGnomADPositions.out[1].collect())
 
         RFPrediction(mergeExtractedPositions.out, params.loadingPath, params.rfModelPath)
-        if (params.addSexToCaseGroup == "true") {
+        if (params.addSexToCaseGroup) {
             //do sex stratified analysis
             addSexToGroup(RFPrediction.out[1], params.covariate)
             populationChannel = addSexToGroup.out

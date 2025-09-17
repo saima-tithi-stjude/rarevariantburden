@@ -76,24 +76,24 @@ Here we used PCA variant loadings and random forest classifier model from gnomAD
 
 </details>
 
-* association file: This is the main assocaiton test result file. DOM means the dominant model, REC means the recessive model and 2HETS means the double heterozygous model. For each mdoel, the columns are group by each ethnicity, with the same number of columns. The following shows the result of the dominant model and the columns corresponding to the NFE (nonFinnish European):
-    * gene: the gene ID
-    * P_DOM: the p-value of the dominant model
-    * OR_DOM: the odds ratio of the dominant model
-    * caseWMutation_NFE_DOM:  the number of samples with the variants of interest in cases
-    * caseWOMutation_NFE_DOM: the number of samples without the variants of interest in cases
-    * controlWMutation_NFE_DOM: the number of samples with the variants of interest in controls
-    * controlWMutation_NFE_DOM: the number of samples without the variants of interest in controls
-    * other columns: other columns with the column name pattern "caseEstimated*" are used for debug and comparison, can be ignored in practical usage
-* fdr file: It adds FDRs calcualted from 5 different methods:
-    * RBH_point_estimate: the resampling based method using the point estimate
-    * RBH_uppper_limit: the resampling based method using the upper limit estimate
-     DBH: discrete count based FDR calcualted from the R package discreteMTP
-    * DBH.sd, ADBH.sd: discrete count based FDR calcualted from the R package DiscreteFDR. These five FDR estimates are often similar. DBH.sd, ADBH.sd seem to be good FDR choices.
-* QQ plot and lambda estimate: The file containing QQ plot. If the option --nullBoxplot is used, it will add the boxplot of the lambda on the right side under the null of no associations.
-* variants afer QC in cases: These show the variants in each gene in cases after consistent QC and filtering.
-* variants afer QC in controls: These show the variants in each gene in controls after consistent QC and filtering.
-* variants-samples list for top K genes: If we find some genes interesting, it is better to further check whether the variants driving the association are high quality variants and there is no obvious confounding due to ancestries/ethnicities. The script utilities/postCheckCoCoRV.sh can help extract related QC and annotation information to help this check.
+- association file: This is the main assocaiton test result file. DOM means the dominant model, REC means the recessive model and 2HETS means the double heterozygous model. For each mdoel, the columns are group by each ethnicity, with the same number of columns. The following shows the result of the dominant model and the columns corresponding to the NFE (nonFinnish European):
+  - gene: the gene ID
+  - P_DOM: the p-value of the dominant model
+  - OR_DOM: the odds ratio of the dominant model
+  - caseWMutation_NFE_DOM: the number of samples with the variants of interest in cases
+  - caseWOMutation_NFE_DOM: the number of samples without the variants of interest in cases
+  - controlWMutation_NFE_DOM: the number of samples with the variants of interest in controls
+  - controlWMutation_NFE_DOM: the number of samples without the variants of interest in controls
+  - other columns: other columns with the column name pattern "caseEstimated\*" are used for debug and comparison, can be ignored in practical usage
+- fdr file: It adds FDRs calcualted from 5 different methods:
+  - RBH_point_estimate: the resampling based method using the point estimate
+  - RBH_uppper_limit: the resampling based method using the upper limit estimate
+    DBH: discrete count based FDR calcualted from the R package discreteMTP
+  - DBH.sd, ADBH.sd: discrete count based FDR calcualted from the R package DiscreteFDR. These five FDR estimates are often similar. DBH.sd, ADBH.sd seem to be good FDR choices.
+- QQ plot and lambda estimate: The file containing QQ plot. If the option --nullBoxplot is used, it will add the boxplot of the lambda on the right side under the null of no associations.
+- variants afer QC in cases: These show the variants in each gene in cases after consistent QC and filtering.
+- variants afer QC in controls: These show the variants in each gene in controls after consistent QC and filtering.
+- variants-samples list for top K genes: If we find some genes interesting, it is better to further check whether the variants driving the association are high quality variants and there is no obvious confounding due to ancestries/ethnicities. The script utilities/postCheckCoCoRV.sh can help extract related QC and annotation information to help this check.
 
 ### Pipeline information
 

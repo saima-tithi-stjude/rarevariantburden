@@ -38,33 +38,40 @@ work                # Directory containing the Nextflow working files
 ```
 
 ## Running the pipeline with your data
+
 Running the pipeline involves three steps:
 
 1. Prepare joint called VCF file:
-  * First, prepare the joint called and VQSR applied VCF file from your case study. You can use [nf-core/sarek](https://nf-co.re/sarek/) pipeline's [GATK joint calling module](https://nf-co.re/sarek/3.5.1/docs/output/#gatk-joint-germline-variant-calling) to prepare a joint called and VQSR applied VCF file from your sample VCF files. You also need to prepare a text file containing sample IDs, one sample ID per line.
+
+- First, prepare the joint called and VQSR applied VCF file from your case study. You can use [nf-core/sarek](https://nf-co.re/sarek/) pipeline's [GATK joint calling module](https://nf-co.re/sarek/3.5.1/docs/output/#gatk-joint-germline-variant-calling) to prepare a joint called and VQSR applied VCF file from your sample VCF files. You also need to prepare a text file containing sample IDs, one sample ID per line.
 
 2. Download control data:
-  * For control data, you need to download the control data from our Amazon AWS s3 bucket. We provide 3 different control datasets, For build GRCH37, we have gnomAD v2 exome data, for build GRCh38, we have gnomAD v4.1 exome and gnomAD v4.1 genome data as controls.
-  * As the control data is a huge dataset, it is better to use Amazon AWS command line tool [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to download the data. After installing this, you can use "aws s3" command to list any s3 bucket folder, or download any folder or files from s3. You will find the s3 commands list [in here](https://docs.aws.amazon.com/cli/latest/reference/s3/).
-  * Here are the s3 bucket paths of the 3 gnomAD control datasets:
-    * s3://cocorv-resource-files/gnomADv2exome/
-    * s3://cocorv-resource-files/gnomADv4.1exome/
-    * s3://cocorv-resource-files/gnomADv4.1genome/
-  * To download the data, you need to run following command:
-  ```bash
-  cd /local-dir-path-where-you-want-download/
-  aws s3 cp s3://cocorv-resource-files/gnomADv2exome/ . --recursive
-  ```
-  * You can check all resource files for our pipeline using this command:
-  ```bash
-  aws s3 ls s3://cocorv-resource-files/
-  ```
+
+- For control data, you need to download the control data from our Amazon AWS s3 bucket. We provide 3 different control datasets, For build GRCH37, we have gnomAD v2 exome data, for build GRCh38, we have gnomAD v4.1 exome and gnomAD v4.1 genome data as controls.
+- As the control data is a huge dataset, it is better to use Amazon AWS command line tool [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to download the data. After installing this, you can use "aws s3" command to list any s3 bucket folder, or download any folder or files from s3. You will find the s3 commands list [in here](https://docs.aws.amazon.com/cli/latest/reference/s3/).
+- Here are the s3 bucket paths of the 3 gnomAD control datasets:
+  - s3://cocorv-resource-files/gnomADv2exome/
+  - s3://cocorv-resource-files/gnomADv4.1exome/
+  - s3://cocorv-resource-files/gnomADv4.1genome/
+- To download the data, you need to run following command:
+
+```bash
+cd /local-dir-path-where-you-want-download/
+aws s3 cp s3://cocorv-resource-files/gnomADv2exome/ . --recursive
+```
+
+- You can check all resource files for our pipeline using this command:
+
+```bash
+aws s3 ls s3://cocorv-resource-files/
+```
 
 3. Download the annotation tool resources:
-  * You also need to download the annovar and VEP resource folders for running Annovar and VEP annotation.
-  * Here are the s3 bucket paths of the annotation tool datasets:
-    * s3://cocorv-resource-files/annovarFolder/
-    * s3://cocorv-resource-files/vepFolder/
+
+- You also need to download the annovar and VEP resource folders for running Annovar and VEP annotation.
+- Here are the s3 bucket paths of the annotation tool datasets:
+  - s3://cocorv-resource-files/annovarFolder/
+  - s3://cocorv-resource-files/vepFolder/
 
 Now, you can run the pipeline using the following command:
 

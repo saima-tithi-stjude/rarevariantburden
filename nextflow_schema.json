@@ -140,7 +140,7 @@
                 },
                 "AFMax": {
                     "type": "number",
-                    "default": 0.0001,
+                    "default": 0.0005,
                     "description": "The maximum of the alternate allele frequency, for gnomADv2exome, we used 0.0001, for gnomADv4.1genome and v4.1exome, we used 0.0005",
                     "help_text": "The maximum of the alternate allele frequency, for gnomADv2exome, we used 0.0001, for gnomADv4.1genome and v4.1exome, we used 0.0005"
                 },
@@ -336,8 +336,8 @@
             "description": "Define different pipeline parameters for sex-stratified analysis.",
             "properties": {
                 "addSexToCaseGroup": {
-                    "type": "string",
-                    "default": "false",
+                    "type": "boolean",
+                    "default": false,
                     "description": "If you want to do sex stratified analysis, need to put \"true\" here. Default: \"false\"",
                     "help_text": "If you want to do sex stratified analysis, need to put \"true\" here. Default: \"false\""
                 },

@@ -142,6 +142,7 @@ For more details about the output files and reports, please refer to the
 ## Credits
 
 nf-core/rarevariantburden is written by Saima Sultana Tithi (saimasultana.tithi@stjude.org), St. Jude Children's Research Hospital, Memphis, TN and Wenan Chen (chen.wenan@mayo.edu), Mayo Clinic, Rochester, MN.
+
 <!-- nf-core:
 We thank the following people for their extensive assistance in the development of this pipeline:
 If applicable, make list of people who have also contributed -->
