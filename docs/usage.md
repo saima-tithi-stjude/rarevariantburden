@@ -68,7 +68,7 @@ Running the pipeline involves three steps:
 
 Now, you can run the pipeline using the following command:
 
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
+<!-- nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
 nextflow run nf-core/rarevariantburden \
@@ -78,7 +78,7 @@ nextflow run nf-core/rarevariantburden \
    --controlDataFolder <controldataFolder> \
    --annovarFoler <annovarFolder> \
    --vepFolder <vepFolder> \
-   --build <GRCh37/GRCh38> \
+   --reference <GRCh37/GRCh38> \
    --gnomADVersion <v2exome/v4exome/v4genome> \
    --outdir <OUTDIR>
 ```
@@ -104,13 +104,66 @@ caseSample: 'sampleList.txt'
 controlDataFolder: 'controldataFolder'
 annovarFolder: 'annovarFolder'
 vepFolder: 'vepFolder'
-build: 'GRCh37'
-gnomADVersion: 'v2exome'
+reference: 'GRCh38'
+gnomADVersion: 'v4exome'
 outdir: './results/'
 <...>
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+
+A sample params file in yaml format for running for only chr 21 and 22 with a case VCF file list looks like this (case VCF file list needs to contain only VCF files for chr 21 and chr 22):
+
+```yaml title="params.yaml"
+caseJointVCF: 'NA'
+caseVCFFileList: 'caseVCFFileList-chr21-22.csv'
+caseBed: 'coverage.summary.bed.gz'
+controlDataFolder: 'controldataFolder'
+annovarFolder: 'annovarFolder'
+vepFolder: 'vepFolder'
+reference: 'GRCh38'
+gnomADVersion: 'v4exome'
+outdir: './results/'
+chrSet: '21 22'
+<...>
+```
+
+A sample params file in yaml format for running with case VCF file list and for VEP annotation looks like this:
+
+```yaml title="params.yaml"
+caseJointVCF: 'NA'
+caseVCFFileList: 'caseVCFFileList.csv'
+caseBed: 'coverage.summary.bed.gz'
+controlDataFolder: 'controldataFolder'
+annovarFolder: 'annovarFolder'
+vepFolder: 'vepFolder'
+reference: 'GRCh38'
+gnomADVersion: 'v4exome'
+outdir: './results/'
+annotationTool: 'VEP'
+variantGroup: 'vep_lof_nosplicing'
+variantGroupCustom: 'variantGroupCustom.txt'
+groupColumn: 'SYMBOL'
+<...>
+```
+
+A sample params file in yaml format for running with case VCF file list containing chr21, chr22, and chrX and for sex-stratified analysis looks like this:
+
+```yaml title="params.yaml"
+caseJointVCF: 'NA'
+caseVCFFileList: 'caseVCFFileList-chr21-22-X.csv'
+caseBed: 'coverage.summary.bed.gz'
+controlDataFolder: 'controldataFolder'
+annovarFolder: 'annovarFolder'
+vepFolder: 'vepFolder'
+reference: 'GRCh38'
+gnomADVersion: 'v4exome'
+outdir: './results/'
+chrSet: '21 22 X'
+addSexToCaseGroup: 'true'
+covariate: 'sampleID-sex.txt'
+<...>
+```
 
 ### Updating the pipeline
 

@@ -13,18 +13,20 @@ include {
     coverageIntersect;
     normalizeQC;
     skipNormalization;
-    annotate;
+    annotate_annovar;
+    annotate_vep;
     skipAnnotation;
     caseGenotypeGDS;
     caseAnnotationGDS;
     extractGnomADPositions;
     mergeExtractedPositions;
     RFPrediction;
+    addSexToGroup;
     CoCoRV;
     mergeCoCoRVResults;
     QQPlotAndFDR;
     postCheck
-} from '../modules/local/modules.nf'
+} from '../modules/local/cocorv'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,8 +86,22 @@ workflow RAREVARIANTBURDEN {
 
     // annotate
     if (params.caseAnnotatedVCFFileList == "NA") {
-        annotate(normalizeQCChannel, params.build, params.annovarFolder, params.vepFolder, params.refFASTA)
-        annotateChannel = annotate.out
+        if (params.annotationTool == "ANNOVAR") {
+            annotate_annovar(normalizeQCChannel, params.reference, params.annovarFolder)
+            annotateChannel = annotate_annovar.out
+        }
+        else if (params.annotationTool == "ANNOVAR_VEP" || params.annotationTool == "VEP") {
+            vepPluginFolder = params.vepFolder + "/other_data/"
+            vepCacheFolder = "NA"
+            if (params.reference == "GRCh37") {
+                vepCacheFolder = params.vepFolder + "/ensembl-vep/cache/"
+            }
+            else if (params.reference == "GRCh38") {
+                vepCacheFolder = params.vepFolder + "/ensembl-vep/cache_hg38/"
+            }
+            annotate_vep(normalizeQCChannel, params.reference, params.annovarFolder, vepCacheFolder, vepPluginFolder, params.refFASTA)
+            annotateChannel = annotate_vep.out
+        }
     } else {
         //already have annotated vcf files
         annotate_ch = Channel
@@ -127,10 +143,17 @@ workflow RAREVARIANTBURDEN {
         extractGnomADPositions(normalizeQCChannel, params.gnomADPCPosition)
 
         // merge extracted gnomAD positions
-        mergeExtractedPositions(extractGnomADPositions.out.collect())
+        mergeExtractedPositions(extractGnomADPositions.out[0].collect(),
+                            extractGnomADPositions.out[1].collect())
 
         RFPrediction(mergeExtractedPositions.out, params.loadingPath, params.rfModelPath)
-        populationChannel = RFPrediction.out[1]
+        if (params.addSexToCaseGroup == "true") {
+            //do sex stratified analysis
+            addSexToGroup(RFPrediction.out[1], params.covariate)
+            populationChannel = addSexToGroup.out
+        } else {
+            populationChannel = RFPrediction.out[1]
+        }
     } else {
         //already have ethnicity prediction for all samples
         populationChannel = Channel.value(params.casePopulation)
@@ -152,7 +175,7 @@ workflow RAREVARIANTBURDEN {
     controlChannel = controlGenotypeGDSChannel.join(controlAnnotationGDSChannel)
     caseChannel = caseGenotypeGDSChannel.join(caseAnnotationGDSChannel)
 
-    if (params.build == "GRCh37") {
+    if (params.reference == "GRCh37") {
         CoCoRV(caseChannel.join(controlChannel),
             intersectChannel,
             populationChannel,
@@ -161,7 +184,7 @@ workflow RAREVARIANTBURDEN {
             params.controlDataFolder + "/full_vs_gnomAD.p0.05.OR1.ignoreEthnicityInLD.rds",
             params.caseSample)
     }
-    else if (params.build == "GRCh38") {
+    else if (params.reference == "GRCh38") {
         CoCoRV(caseChannel.join(controlChannel),
             intersectChannel,
             populationChannel,
@@ -178,7 +201,7 @@ workflow RAREVARIANTBURDEN {
     // QQ plot and FDR
     QQPlotAndFDR(mergeCoCoRVResults.out.association_res, mergeCoCoRVResults.out.caseVariants_res, mergeCoCoRVResults.out.controlVariants_res)
 
-    postCheck(mergeCoCoRVResults.out.association_res, params.topK, params.caseControl, params.build, params.caseSample,
+    postCheck(mergeCoCoRVResults.out.association_res, params.topK, params.caseControl, params.reference, params.caseSample,
         normalizeQCChannel.normalizedQCedVCFFile.collect(),
         normalizeQCChannel.normalizedQCedVCFFileIndex.collect(),
         annotateChannel.annotatedFile.collect(),

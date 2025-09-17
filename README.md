@@ -37,17 +37,18 @@ Some key features of our pipeline:
 - It can stratify cases into different ethnicity groups, and perform stratified analysis with group-matched control summary counts.
 - For recessive models, it can exclude double heterozygous due to high linkage disequilibrium in populations.
 - Also provides accurate inflation factor estimate, QQ plot, and powerful FDR control for discrete count data, whose p-value distribution under the null is far from the uniform distribution when the alleles are very rare.
+- Also can perform sex-stratified analysis if user can provide the gender of the input samples
 - It supports gnomAD v2 exome (GRCh37) data, and gnomAD v4.1 exome (GRCh38) data, and gnomAD v4.1 genome (GRCh38) data as control.
 
-<!-- TODO nf-core:
+<!-- nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
    major pipeline sections and the types of output it produces. You're giving an overview to someone new
    to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
 -->
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
+<!-- nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
      workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+<!-- nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
 ## Pipeline summary
 
@@ -71,29 +72,18 @@ Some key features of our pipeline:
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
+<!-- nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
      Explain what rows and columns represent. For instance (please edit as appropriate):
-
-First, prepare a samplesheet with your input data that looks as follows:
-
-`samplesheet.csv`:
-
-```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-```
-
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
 
 -->
 
 First, prepare the joint called and VQSR applied VCF file from your case study. You can use [nf-core/sarek](https://nf-co.re/sarek/) pipeline's [GATK joint calling module](https://nf-co.re/sarek/3.5.1/docs/output/#gatk-joint-germline-variant-calling) to prepare a joint called and VQSR applied VCF file from your sample VCF files. You also need to prepare a text file containing sample IDs, one sample ID per line.
 
-For control data, you need to download the control data from our Amazon AWS s3 bucket. We provide 3 different control datasets, For build GRCH37, we have gnomADv2exome data, for build GRCh38, we have gnomADv4.1exome and gnomADv4.1genome data as controls.
+For control data, you need to download the control data from our Amazon AWS s3 bucket. We provide 3 different control datasets, For build GRCh37, we have gnomADv2exome data, for build GRCh38, we have gnomADv4.1exome and gnomADv4.1genome data as controls.
 
 As the control data is a huge dataset, it is better to use Amazon AWS command line tool [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to download the data.
 
-After installing this, you can use "aws s3" command to list any s3 bucket folder, or download any folder or files from s3. You will find the s3 commands list [in here](https://docs.aws.amazon.com/cli/latest/reference/s3/).
+After installing [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html), you can use "aws s3" command to list any s3 bucket folder, or download any folder or files from s3. You will find the s3 commands list [in here](https://docs.aws.amazon.com/cli/latest/reference/s3/).
 
 Here are the s3 bucket paths of the 3 gnomAD control datasets:
 
@@ -123,7 +113,7 @@ Here are the s3 bucket paths of the annotation tool datasets:
 
 Now, you can run the pipeline using the following command:
 
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
+<!-- nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
 nextflow run nf-core/rarevariantburden \
@@ -133,7 +123,7 @@ nextflow run nf-core/rarevariantburden \
    --controlDataFolder <controldataFolder> \
    --annovarFoler <annovarFolder> \
    --vepFolder <vepFolder> \
-   --build <GRCh37/GRCh38> \
+   --reference <GRCh37/GRCh38> \
    --gnomADVersion <v2exome/v4exome/v4genome> \
    --outdir <OUTDIR>
 ```
@@ -151,9 +141,8 @@ For more details about the output files and reports, please refer to the
 
 ## Credits
 
-nf-core/rarevariantburden is written by Saima Sultana Tithi (saimasultana.tithi@stjude.org) and Wenan Chen (chen.wenan@mayo.edu).
-
-<!-- TODO nf-core:
+nf-core/rarevariantburden is written by Saima Sultana Tithi (saimasultana.tithi@stjude.org), St. Jude Children's Research Hospital, Memphis, TN and Wenan Chen (chen.wenan@mayo.edu), Mayo Clinic, Rochester, MN.
+<!-- nf-core:
 We thank the following people for their extensive assistance in the development of this pipeline:
 If applicable, make list of people who have also contributed -->
 
@@ -164,11 +153,6 @@ If you would like to contribute to this pipeline, please see the [contributing g
 For further information or help, don't hesitate to get in touch on the [Slack `#rarevariantburden` channel](https://nfcore.slack.com/channels/rarevariantburden) (you can join with [this invite](https://nf-co.re/join/slack)).
 
 ## Citations
-
-<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use nf-core/rarevariantburden for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
 To learn more about the original CoCoRV tool, please look at our paper published in _Nature Communications_ [Pubmed link](https://pubmed.ncbi.nlm.nih.gov/35545612/).
 

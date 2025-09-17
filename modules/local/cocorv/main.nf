@@ -13,7 +13,7 @@ process splitJointVCF {
 
     script:
     """
-    if [[ ${params.build} == "GRCh37" ]]; then
+    if [[ ${params.reference} == "GRCh37" ]]; then
         bcftools view -r ${chr} -Oz -o chr${chr}.vcf.gz ${caseJointVCF}
     else
         bcftools view -r chr${chr} -Oz -o chr${chr}.vcf.gz ${caseJointVCF}
@@ -49,9 +49,9 @@ process normalizeQC {
 
     input:
     tuple val(chr), path(vcfFile)
-    path reference
-    path referenceFai
-    path referenceGzi
+    path refFASTA
+    path refFASTAFai
+    path refFASTAGzi
 
     output:
     val("${chr}"), emit: chr
@@ -61,7 +61,7 @@ process normalizeQC {
     script:
     """
     outputPrefix=${chr}
-    ${params.CoCoRVFolder}/utilities/vcfQCAndNormalize.sh ${vcfFile} \${outputPrefix} ${reference}
+    ${params.CoCoRVFolder}/utilities/vcfQCAndNormalize.sh ${vcfFile} \${outputPrefix} ${refFASTA}
     """
 }
 
@@ -84,23 +84,58 @@ process skipNormalization {
     """
 }
 
-process annotate {
+process annotate_annovar {
     tag "${chr}"
     label 'process_medium'
     publishDir "${params.outdir}/annotation", mode: 'copy'
     container 'stithi/cocorv-nextflow-vep:v3'
 
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
-    maxRetries 2
+    maxRetries 5
 
     input:
     val(chr)
     path(normalizedQCedVCFFile)
     path(indexFile)
-    val build
+    val reference
     path annovarFolder
-    path vepFolder
-    path reference
+
+    output:
+    val("${chr}"), emit: chr
+    path("${chr}.annotated.vcf.gz"), emit: annotatedFile
+    path("${chr}.annotated.vcf.gz.tbi"), emit: annotatedFileIndex
+
+    script:
+    if (reference == "GRCh37") {
+        refbuild  ="hg19"
+    }
+    else if (reference == "GRCh38") {
+        refbuild = "hg38"
+    }
+    """
+    outputPrefix="${chr}.annotated"
+    bash ${params.CoCoRVFolder}/utilities/annotate_docker.sh ${normalizedQCedVCFFile} ${annovarFolder} ${refbuild} \${outputPrefix} ${params.VCFAnno} ${params.toml} ${params.protocol} ${params.operation}
+    """
+}
+
+process annotate_vep {
+    tag "${chr}"
+    label 'process_medium'
+    publishDir "${params.outdir}/annotation", mode: 'copy'
+    container 'stithi/cocorv-nextflow-vep:v3'
+
+    errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
+    maxRetries 5
+
+    input:
+    val(chr)
+    path(normalizedQCedVCFFile)
+    path(indexFile)
+    val reference
+    path annovarFolder
+    path vepCacheFolder
+    path vepPluginFolder
+    path refFASTA
 
     output:
     val("${chr}"), emit: chr
@@ -109,50 +144,47 @@ process annotate {
 
     script:
     refbuild = null
+    lofteeFolder = null
+    lofteeDataFolder = null
     caddSNV = null
     caddIndel = null
     spliceAISNV = null
     spliceAIIndel = null
     AM = null
     REVEL = null
-    VEPCACHE = null
     vepThreads = 6
 
-    if (build == "GRCh37") {
-        refbuild = "hg19"
-        lofteeFolder = vepFolder + "/other_data/loftee/loftee"
-        lofteeDataFolder = vepFolder + "/other_data/loftee/data"
-        caddSNV = vepFolder + "/other_data/CADD/hg19/v1.7/whole_genome_SNVs.tsv.gz"
-        caddIndel = vepFolder + "/other_data/CADD/hg19/v1.7/gnomad.genomes-exomes.r4.0.indel.tsv.gz"
-        spliceAISNV = vepFolder + "/other_data/SpliceAI/spliceai_scores.raw.snv.hg19.vcf.gz"
-        spliceAIIndel = vepFolder + "/other_data/SpliceAI/spliceai_scores.raw.indel.hg19.vcf.gz"
-        AM = vepFolder + "/other_data/AlphaMissense"
-        REVEL = vepFolder + "/other_data/REVEL"
-        VEPCACHE = vepFolder + "/ensembl-vep/cache"
+    if (reference == "GRCh37") {
+        refbuild  ="hg19"
+        lofteeFolder = vepPluginFolder + "/loftee/loftee"
+        lofteeDataFolder = vepPluginFolder + "/loftee/data"
+        caddSNV = vepPluginFolder + "/CADD/hg19/v1.7/whole_genome_SNVs.tsv.gz"
+        caddIndel = vepPluginFolder + "/CADD/hg19/v1.7/gnomad.genomes-exomes.r4.0.indel.tsv.gz"
+        spliceAISNV = vepPluginFolder + "/SpliceAI/spliceai_scores.raw.snv.hg19.vcf.gz"
+        spliceAIIndel = vepPluginFolder + "/SpliceAI/spliceai_scores.raw.indel.hg19.vcf.gz"
+        AM = vepPluginFolder + "/AlphaMissense"
+        REVEL = vepPluginFolder + "/REVEL"
     }
-    else if (build == "GRCh38") {
+    else if (reference == "GRCh38") {
         refbuild = "hg38"
-        lofteeFolder = vepFolder + "/other_data/loftee/loftee"
-        lofteeDataFolder = vepFolder + "/other_data/loftee/data_hg38"
-        caddSNV = vepFolder + "/other_data/CADD/hg38/v1.7/whole_genome_SNVs.tsv.gz"
-        caddIndel = vepFolder + "/other_data/CADD/hg38/v1.7/gnomad.genomes.r4.0.indel.tsv.gz"
-        spliceAISNV = vepFolder + "/other_data/SpliceAI/spliceai_scores.raw.snv.hg38.vcf.gz"
-        spliceAIIndel = vepFolder + "/other_data/SpliceAI/spliceai_scores.raw.indel.hg38.vcf.gz"
-        AM = vepFolder + "/other_data/AlphaMissense"
-        REVEL = vepFolder + "/other_data/REVEL"
-        VEPCACHE = vepFolder + "/ensembl-vep/cache_hg38"
+        lofteeFolder = vepPluginFolder + "/loftee/loftee"
+        lofteeDataFolder = vepPluginFolder + "/loftee/data_hg38"
+        caddSNV = vepPluginFolder + "/CADD/hg38/v1.7/whole_genome_SNVs.tsv.gz"
+        caddIndel = vepPluginFolder + "/CADD/hg38/v1.7/gnomad.genomes.r4.0.indel.tsv.gz"
+        spliceAISNV = vepPluginFolder + "/SpliceAI/spliceai_scores.raw.snv.hg38.vcf.gz"
+        spliceAIIndel = vepPluginFolder + "/SpliceAI/spliceai_scores.raw.indel.hg38.vcf.gz"
+        AM = vepPluginFolder + "/AlphaMissense"
+        REVEL = vepPluginFolder + "/REVEL"
     }
 
     """
-    if [[ ${params.addVEP} != "T" ]]; then
+    if [[ ${params.annotationTool} == "VEP" ]]; then
         outputPrefix="${chr}.annotated"
-    else
+        bash ${params.CoCoRVFolder}/utilities/annotateVEPWithOptions_docker_no_mane_v3.sh ${normalizedQCedVCFFile} ${reference} ${chr}.annotated ${refFASTA} ${lofteeFolder} ${lofteeDataFolder} ${caddSNV} ${caddIndel} ${spliceAISNV} ${spliceAIIndel} ${AM} ${REVEL} ${vepThreads} ${params.VEPAnnotations} ${vepCacheFolder}
+    elif [[ ${params.annotationTool} == "ANNOVAR_VEP" ]]; then
         outputPrefix="${chr}.annotated.annovar"
-    fi
-    bash ${params.CoCoRVFolder}/utilities/annotate_docker.sh ${normalizedQCedVCFFile} ${annovarFolder} ${refbuild} \${outputPrefix} ${params.VCFAnno} ${params.toml} ${params.protocol} ${params.operation}
-
-    if [[ ${params.addVEP} == "T" ]]; then
-        bash ${params.CoCoRVFolder}/utilities/annotateVEPWithOptions_docker_no_mane_v3.sh ${chr}.annotated.annovar.vcf.gz ${build} ${chr}.annotated ${reference} ${lofteeFolder} ${lofteeDataFolder} ${caddSNV} ${caddIndel} ${spliceAISNV} ${spliceAIIndel} ${AM} ${REVEL} ${vepThreads} ${params.VEPAnnotations} ${VEPCACHE}
+        bash ${params.CoCoRVFolder}/utilities/annotate_docker.sh ${normalizedQCedVCFFile} ${annovarFolder} ${refbuild} \${outputPrefix} ${params.VCFAnno} ${params.toml} ${params.protocol} ${params.operation}
+        bash ${params.CoCoRVFolder}/utilities/annotateVEPWithOptions_docker_no_mane_v3.sh ${chr}.annotated.annovar.vcf.gz ${reference} ${chr}.annotated ${refFASTA} ${lofteeFolder} ${lofteeDataFolder} ${caddSNV} ${caddIndel} ${spliceAISNV} ${spliceAIIndel} ${AM} ${REVEL} ${vepThreads} ${params.VEPAnnotations} ${vepCacheFolder}
     fi
     """
 }
@@ -184,8 +216,6 @@ process caseGenotypeGDS {
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
     maxRetries 2
 
-    publishDir "${params.outdir}/vcf_vqsr_normalizedQC", mode: 'copy'
-
     input:
     val(chr)
     path(normalizedQCedVCFFile)
@@ -208,8 +238,6 @@ process caseAnnotationGDS {
 
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
     maxRetries 1
-
-    publishDir "${params.outdir}/annotation", mode: 'copy'
 
     input:
     val(chr)
@@ -240,10 +268,12 @@ process extractGnomADPositions {
 
     output:
     path "${chr}.extracted.vcf.gz"
+    path "${chr}.extracted.vcf.gz.tbi"
 
     script:
     """
     bcftools view -R ${gnomADPCPosition} -Oz -o ${chr}.extracted.vcf.gz ${normalizedQCedVCFFile}
+    bcftools index -t ${chr}.extracted.vcf.gz
     """
 }
 
@@ -254,6 +284,7 @@ process mergeExtractedPositions {
 
     input:
     path extractedVCFFile
+    path extractedVCFFileIndex
 
     output:
     path("all.extracted.vcf.bgz")
@@ -265,7 +296,7 @@ process mergeExtractedPositions {
 }
 
 process RFPrediction {
-    label 'process_single'
+    label 'process_low'
     publishDir "${params.outdir}/gnomADPosition", mode: 'copy'
     container 'stithi/cocorv-nextflow-python:v7'
 
@@ -280,14 +311,32 @@ process RFPrediction {
 
     script:
     threshold = "0.75"
-    if (params.build == "GRCh37") {
+    if (params.reference == "GRCh37") {
         threshold = "0.9"
     }
-    else if (params.build == "GRCh38") {
+    else if (params.reference == "GRCh38") {
         threshold = "0.75"
     }
     """
-    bash ${params.CoCoRVFolder}/utilities/gnomADPCAndAncestry_docker.sh ${params.CoCoRVFolder} ${loadingPath} ${rfModelPath} ${VCFForPrediction} ${params.build} "PC.population.output.gz" ${threshold} "casePopulation.txt"
+    bash ${params.CoCoRVFolder}/utilities/gnomADPCAndAncestry_docker.sh ${params.CoCoRVFolder} ${loadingPath} ${rfModelPath} ${VCFForPrediction} ${params.reference} "PC.population.output.gz" ${threshold} "casePopulation.txt"
+    """
+}
+
+process addSexToGroup {
+    label 'process_single'
+    publishDir "${params.outdir}/gnomADPosition", mode: 'copy'
+    container 'stithi/cocorv-nextflow-r:v5'
+
+    input:
+    path casePopulation
+    path covariate
+
+    output:
+    path "casePopulationBySex.txt"
+
+    script:
+    """
+    Rscript ${params.CoCoRVFolder}/utilities/stratifiedBySex.R ${casePopulation} ${covariate} "casePopulationBySex.txt"
     """
 }
 
@@ -315,14 +364,44 @@ process CoCoRV {
     path("${chr}.control.group"), emit: controlVariants_perChr
 
     script:
+    chrOnly = chr
+    start = ""
+    end = ""
+    if (chr == "NA") {
+        // NA to use no chr in the controls
+        chrOnly = ""
+    } else if (chr.matches(".*_.*")) {
+        // this is useful for shad based case data, such as 1_13004384_121976459
+        // for chromosome 1 within the region 13004384:121976459, and will match
+        // chromosome 1 for the control data
+        parts = chr.split("_")
+        chrOnly = parts[0]
+        start = parts[1]
+        end = parts[2]
+    }
 
     """
+    if [[ "${start}" != "" ]]; then
+        # overlap with the shad region
+        checkChr=\$(zcat ${intersectBed} | head -1 | cut -f1)
+        if [[ \${checkChr} =~ "chr" ]]; then
+            chrString="chr"$chrOnly
+        else
+            chrString=$chrOnly
+        fi
+        finalBed="intersect.bed.gz"
+        printf "\$chrString\t$start\t$end\n" > shad.bed
+        bedtools intersect -a ${intersectBed} -b shad.bed | gzip > \${finalBed}
+    else
+        finalBed=${intersectBed}
+    fi
+
     otherOptions=""
     if [[ "${params.CoCoRVOptions}" != "NA" ]]; then
         otherOptions="${params.CoCoRVOptions}"
     fi
-    if [[ "${params.groupFunctionConfig}" != "NA" ]]; then
-        otherOptions="\${otherOptions} --variantGroupCustom ${params.groupFunctionConfig}"
+    if [[ "${params.variantGroupCustom}" != "NA" ]]; then
+        otherOptions="\${otherOptions} --variantGroupCustom ${params.variantGroupCustom}"
     fi
     if [[ "${params.extraParamJason}" != "NA" ]]; then
         otherOptions="\${otherOptions} --extraParamJason ${params.extraParamJason}"
@@ -355,7 +434,7 @@ process CoCoRV {
     --checkHighLDInControl \
     --pLDControl ${params.pLDControl} \
     --fullCaseGenotype \
-    --reference ${params.build} \
+    --reference ${params.reference} \
     --gnomADVersion ${params.gnomADVersion} \
     --controlAnnoGDSFile ${controlAnnotated} \
     --caseAnnoGDSFile ${caseAnnoGDS} \
@@ -459,6 +538,6 @@ process postCheck {
 
     script:
     """
-    bash ${params.CoCoRVFolder}/utilities/checkFPGenes.sh ${params.CoCoRVFolder} ${associationResult} ${topK} ${caseControl} ${params.build} ${caseSample} ${params.addVEP}
+    bash ${params.CoCoRVFolder}/utilities/checkFPGenes.sh ${params.CoCoRVFolder} ${associationResult} ${topK} ${caseControl} ${params.reference} ${caseSample} ${params.annotationTool}
     """
 }
