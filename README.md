@@ -37,7 +37,7 @@ Some key features of our pipeline:
 - It can stratify cases into different ethnicity groups, and perform stratified analysis with group-matched control summary counts.
 - For recessive models, it can exclude double heterozygous due to high linkage disequilibrium in populations.
 - Also provides accurate inflation factor estimate, QQ plot, and powerful FDR control for discrete count data, whose p-value distribution under the null is far from the uniform distribution when the alleles are very rare.
-- Also can perform sex-stratified analysis if user can provide the gender of the input samples
+- Also can perform sex-stratified analysis if user provides the gender of the input samples
 - It supports gnomAD v2 exome (GRCh37) data, and gnomAD v4.1 exome (GRCh38) data, and gnomAD v4.1 genome (GRCh38) data as control.
 
 <!-- nf-core:

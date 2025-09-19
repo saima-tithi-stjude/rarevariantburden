@@ -10,7 +10,7 @@
 
 ## Prerequisites
 
-1. Install Nextflow (>=23.10.0) using the instructions [here.](https://nextflow.io/docs/latest/getstarted.html#installation)
+1. Install Nextflow (>=24.04.2) using the instructions [here.](https://nextflow.io/docs/latest/getstarted.html#installation)
 2. Install one of the following technologies for full pipeline reproducibility: Docker, Singularity, Podman, Shifter or Charliecloud.
 
 ## Run nf-core/rarevariantburden with test data
@@ -167,7 +167,7 @@ reference: 'GRCh38'
 gnomADVersion: 'v4exome'
 outdir: './results/'
 chrSet: '21 22 X'
-addSexToCaseGroup: 'true'
+addSexToCaseGroup: true
 covariate: 'sampleID-sex.txt'
 <...>
 ```
