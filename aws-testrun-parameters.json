@@ -1,0 +1,13 @@
+{
+  "reference": "GRCh37",
+  "topK": 20,
+  "vepFolder": "s3://cocorv-resource-files/vepFolder/",
+  "caseSample": "s3://cocorv-1kg-grch37-data/casePopulation.txt",
+  "gnomADVersion": "v2exome",
+  "chrSet": "21 22",
+  "annovarFolder": "s3://cocorv-resource-files/annovarFolder/",
+  "caseVCFFileList": "s3://cocorv-1kg-grch37-data/test-1KG-vcf-files_chr21-22.csv",
+  "caseJointVCF": "NA",
+  "controlDataFolder": "s3://cocorv-resource-files/gnomADv2exome/",
+  "outdir": "/mnt/workflow/"
+}
