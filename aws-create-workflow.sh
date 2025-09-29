@@ -1,1 +1,9 @@
-aws omics create-workflow --name cocorv-nf-core_aws --region us-east-1 --definition-zip fileb://rarevariantburden-dev.zip --parameter-template file://rarevariantburden-dev/aws.parameter.template.json --container-registry-map file://rarevariantburden-dev/aws.container-registry-map.json --readme-markdown file://rarevariantburden-dev/README.md --engine NEXTFLOW --no-verify-ssl
+aws omics create-workflow \
+    --name cocorv-nf-core_aws \
+    --region us-east-1 \
+    --definition-zip fileb://rarevariantburden.zip \
+    --parameter-template file://rarevariantburden/aws.parameter.template.json \
+    --container-registry-map file://rarevariantburden/aws.container-registry-map.json \
+    --readme-markdown file://rarevariantburden/README.md \
+    --engine NEXTFLOW \
+    --no-verify-ssl
