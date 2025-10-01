@@ -136,7 +136,7 @@ For more details and further functionality, please refer to the [usage documenta
 
 ## AWSHealthOmics Implementation
 
-For implementing our pipeline on AWS HealthOmics cloud platform, please refere to our AWS [documentation page](docs/awshealthomics.md).
+For implementing our pipeline on AWS HealthOmics cloud platform, please refere to our AWS [documentation](awshealthomics.md).
 
 ## Pipeline output
 
