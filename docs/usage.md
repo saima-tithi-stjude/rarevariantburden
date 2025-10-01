@@ -6,14 +6,14 @@
 
 ## Introduction
 
-**nf-core/rarevariantburden** is a bioinformatics pipeline that performs consistent summary count based rare variant burden test, which is useful when we only have sequenced cases/patients data, no matched control data, here we provided pre-processed and annotated public summary count data, such as gnomAD data, which can be used for rare variant burden test and can be used to identify disease-predisposition genes present in the case study.
+**nf-core/rarevariantburden (CoCoRV-nf)** is a bioinformatics pipeline that performs consistent summary count based rare variant burden test, which is useful when we only have sequenced cases/patients data, no matched control data, here we provided pre-processed and annotated public summary count data, such as gnomAD data, which can be used for rare variant burden test and can be used to identify disease-predisposition genes present in the case study.
 
 ## Prerequisites
 
-1. Install Nextflow (>=23.10.0) using the instructions [here.](https://nextflow.io/docs/latest/getstarted.html#installation)
+1. Install Nextflow (>=24.04.2) using the instructions [here.](https://nextflow.io/docs/latest/getstarted.html#installation)
 2. Install one of the following technologies for full pipeline reproducibility: Docker, Singularity, Podman, Shifter or Charliecloud.
 
-## Run nf-core/rarevariantburden with test data
+## Run nf-core/rarevariantburden (CoCoRV-nf) with test data
 
 Before running the pipeline with your data, we recommend running it with the test dataset available [here](https://github.com/nf-core/test-datasets/tree/rarevariantburden). You do not need to download the data as the pipeline is configured to fetch that data automatically for you when you use the test profile.
 
@@ -135,7 +135,7 @@ chrSet: '21 22'
 <...>
 ```
 
-A sample params file in yaml format for running with case VCF file list and for VEP annotation looks like this:
+A sample params file in yaml format for running with case VCF file list and for both annovar and VEP annotation looks like this:
 
 ```yaml title="params.yaml"
 caseJointVCF: 'NA'
@@ -147,7 +147,7 @@ vepFolder: 'vepFolder'
 reference: 'GRCh38'
 gnomADVersion: 'v4exome'
 outdir: './results/'
-annotationTool: 'VEP'
+annotationTool: 'ANNOVAR_VEP'
 variantGroup: 'vep_lof_nosplicing'
 variantGroupCustom: 'variantGroupCustom.txt'
 groupColumn: 'SYMBOL'
@@ -167,7 +167,7 @@ reference: 'GRCh38'
 gnomADVersion: 'v4exome'
 outdir: './results/'
 chrSet: '21 22 X'
-addSexToCaseGroup: 'true'
+addSexToCaseGroup: true
 covariate: 'sampleID-sex.txt'
 <...>
 ```

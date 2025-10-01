@@ -1,0 +1,102 @@
+{
+    "outdir": {
+        "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure. For AWS HealthOmics you must use '/mnt/workflow/' in here",
+        "optional": false
+    },
+    "caseJointVCF": {
+        "description": "Joined called and VQSR applied vcf file from the case cohort. If you already have splitted joined called VCF file by chromosome, you need to put 'NA' in here and provide the splitted VCF file list in the 'caseVCFFileList' parameter.",
+        "optional": false
+    },
+    "caseSample": {
+        "description": "One column text file containing list of samples, one sample ID per line.",
+        "optional": false
+    },
+    "controlDataFolder": {
+        "description": "Input files needed for the pipeline from the control dataset, for now we support 3 gnomAD datasets as control, gnomADv2exome, gnomADv4.1exome, gnomADv4.1genome. You need to pass AWS s3 bucket path, i.e., s3://cocorv-resource-files/gnomADv4.1exome as the parameter value",
+        "optional": false
+    },
+    "annovarFolder": {
+        "description": "Resource folder for the annotation tool Annovar, You just need to pass AWS s3 bucket path (s3://cocorv-resource-files/annovarFolder/) as the parameter value",
+        "optional": false
+    },
+    "vepFolder": {
+        "description": "Resource folder for the annotation tool Annovar, You just need to pass AWS s3 bucket path (s3://cocorv-resource-files/vepFolder/) as the parameter value",
+        "optional": false
+    },
+    "reference": {
+        "description": "Reference genome build version, allowed values are 'GRCh37', 'GRCh38'. Default value: 'GRCh38'",
+        "optional": true
+    },
+    "gnomADVersion": {
+        "description": "gnomAD version, allowed values are 'v2exome', 'v4exome', 'v4genome' (for GRCh37 data use 'v2exome', for GRCh38, use 'v4exome' or 'v4genome'). Default value: 'v4exome'",
+        "optional": true
+    },
+    "caseBed": {
+        "description": "Bed file containing good coverage positions from case vcf files where 90% samples have coverage >= 10.",
+        "optional": true
+    },
+    "chrSet": {
+        "description": "List of chromosomes you want to analyze, you can test only for chromosome 21 and 22, in that case, it will be '21 22', default: '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22'",
+        "optional": true
+    },
+    "casePopulation": {
+        "description": "File containing estimation of the population/ethnicity of case samples using gnomAD classifier, optional, if not specified nextflow app will estimate the population using gnomAD classifier.",
+        "optional": true
+    },
+    "annotationTool": {
+        "description": "If you want to run only VEP annotation, you need to put 'VEP' for this parameter, if you want both annovar and vep, you need to put 'ANNOVAR_VEP'. Default: 'ANNOVAR'",
+        "optional": true
+    },
+    "variantGroupCustom": {
+        "description": "An optional R file with functions or a tab separated two column text file defining the variants of interest",
+        "optional": true
+    },
+    "groupColumn": {
+        "description": "The column header used to pull Gene name from annotation file, default: 'Gene.refGene', for VEP, use 'SYMBOL'",
+        "optional": true
+    },
+    "variantGroup": {
+        "description": "A specified variant group to use for test or a self defined function to define the variants of interest. Default: 'annovar_pathogenic'",
+        "optional": true
+    },
+    "AFMax": {
+        "description": "The maximum of the alternate allele frequency, for gnomADv2exome, we used 0.0001, for gnomADv4.1genome and v4.1exome, we used 0.0005, default: 0.0005",
+        "optional": true
+    },
+    "REVELThreshold": {
+        "description": "The minimum REVEL score for pathogenic missense variants, default: 0.65",
+        "optional": true
+    },
+    "topK": {
+        "description": "Top K genes for generating variant-sample list, default: 1000",
+        "optional": true
+    },
+    "caseVCFFileList": {
+        "description": "If you split you joined called VCF file by chromosome, you can supply the per chr VCF file list here, the list needs to be in csv format (comma seperated), the column headers are chr,vcf.",
+        "optional": true
+    },
+    "caseNormalizedVCFFileList": {
+        "description": "Pre-normalized case VCF files, you can use the pre-normalized case VCF files to skip the normalization steps in the pipeline, the list needs to be in csv format (comma seperated), the column headers are chr,vcf,index.",
+        "optional": true
+    },
+    "caseAnnotatedVCFFileList": {
+        "description": "Pre-annotated case VCF files, you can use the pre-annotated case VCF files to skip the annotation steps in the pipeline, the list needs to be in csv format (comma seperated), the column headers are chr,vcf,index.",
+        "optional": true
+    },
+    "caseGenotypeGDSFileList": {
+        "description": "GDS converted genotype case VCF files, you can use it to skip the genotype GDS conversion steps in the pipeline",
+        "optional": true
+    },
+    "caseAnnotationGDSFileList": {
+        "description": "GDS converted annotated case VCF files, you can use it to skip the annotation GDS conversion steps in the pipeline",
+        "optional": true
+    },
+    "addSexToCaseGroup": {
+        "description": "Boolean, if you want to do sex stratified analysis, need to put true here. Default: false",
+        "optional": true
+    },
+    "covariate": {
+        "description": "a file with header, 1st column is ID, and must have a column named 'Sex'. The sex is coded either as Male/Female, 1/2, or XY/XX, NA means missing",
+        "optional": true
+    }
+}

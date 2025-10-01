@@ -120,7 +120,7 @@ process annotate_annovar {
 
 process annotate_vep {
     tag "${chr}"
-    label 'process_medium'
+    label 'process_high'
     publishDir "${params.outdir}/annotation", mode: 'copy'
     container 'stithi/cocorv-nextflow-vep:v3'
 
@@ -211,6 +211,7 @@ process skipAnnotation {
 process caseGenotypeGDS {
     tag "${chr}"
     label 'process_medium'
+    publishDir "${params.outdir}/vcf_vqsr_normalizedQC", mode: 'copy'
     container 'stithi/cocorv-nextflow-r:v5'
 
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
@@ -234,6 +235,7 @@ process caseGenotypeGDS {
 process caseAnnotationGDS {
     tag "${chr}"
     label 'process_medium'
+    publishDir "${params.outdir}/annotation", mode: 'copy'
     container 'stithi/cocorv-nextflow-r:v5'
 
     errorStrategy { task.exitStatus in 130..140 ? 'retry' : 'terminate' }
