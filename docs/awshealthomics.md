@@ -2,14 +2,14 @@
 
 ## Introduction
 
-This documentation will giude you how to implement **nf-core/rarevariantburden (CoCoRV-nf)** pipeline on AWS HealthOmics cloud platform.
+This documentation will guide you how to implement **nf-core/rarevariantburden (CoCoRV-nf)** pipeline on AWS HealthOmics cloud platform.
 
 ## Prerequisites
 
-1. Have a Amazon AWS account
+1. Have a Amazon AWS account (visit https://aws.amazon.com/ to create an account and login)
 2. AWS CLI v2 installed and configured
 3. Appropriate IAM permissions for ECR and HealthOmics
-4. Have a Docker Hub account
+4. Have a Docker Hub account (visit https://hub.docker.com/ to create an Docker Hub account)
 
 ## Regions
 
@@ -266,7 +266,7 @@ Click on the newly created workflow, it will open a window similar to this:
 <img alt="AWS HealthOmics workflow launch page" src="images/aws-healthomics-workflow-launch-page.png">
 </picture>
 
-Click on the 'Start run' button, type a run name for your test run, select a s3 bucket to save the run output, and in the Service role section, choose the HeathOmics role we have created before (HealthOmicsWorkflowRole), click 'Next' to go to the next page. In the 'Add parameters value' section you can upload the test json file provided with the nf-core code base, `aws-testrun-parameters.json`. It will automatically fill all the necessary input parameters to run a test case. Click 'Next'. You can leave all the default settings in the 'Add run group, run cache and tags' section. Then go the final step 'Review and start run' and then start running the workflow.
+Click on the 'Start run' button, type a run name for your test run, select a s3 bucket to save the run output, and in the Service role section, choose the HeathOmics role we have created before (HealthOmicsWorkflowRole), click 'Next' to go to the next page. In the 'Add parameters value' section you can upload the test json file provided with the nf-core code base, `aws-testrun-parameters.json`. It will automatically fill all the necessary input parameters to run a test case, this is a test case containing 25 WGS samples from 1000 Genomes Project (you can check the test files for this test case from this public s3 bucket: s3://cocorv-1kg-grch37-data/). Click 'Next'. You can leave all the default settings in the 'Add run group, run cache and tags' section. Then go the final step 'Review and start run' and then start running the workflow.
 
 After the run finished, you will see a run status page like this, which contains all the run information, output folder link, all the run logs link.
 
